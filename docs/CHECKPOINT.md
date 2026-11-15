@@ -76,15 +76,40 @@ Local repo only — **not pushed** (push requires user consent).
   build, so the regression verifies the tap *handler* directly; the real touch
   path is exercised on device (touch TAP events confirmed in logcat).
 
+## 2026-11-15 late — author credit + handoff README (cykbot12)
+
+- In-game author credit: `interfaces/UI/menu/menu.tscn` new `AuthorCredit`
+  Label, bottom-right: "cykgames 003 · author: cykbot12 · fork of Outpost
+  Assault by Quiver (MIT / CC BY 4.0)". `project.godot` gains
+  `config/version="0.1.0"` and author in `config/description`.
+- `menu.gd:_ready` swaps HowToPlay desktop mouse wording for touch wording on
+  touch devices (hides MouseImg); desktop keeps upstream text.
+- `README.md` rewritten as the handoff entry point: gameplay numbers, balance
+  knobs, code map, touch input flow, build/export, regression coverage +
+  limits, on-device evidence, adb quirks, known issues, repo conventions
+  (privacy: no device facts; push only with user consent).
+- Re-verified after changes: regression **18/18 PASS outcome=win**; menu scene
+  headless smoke 0 errors; `--export-debug "Android"` signed OK,
+  `build/003-outpost.apk` = 51,700,235 bytes; `install -r` on A57
+  (<LAN_IP>:5555) **Success** — NOT launched (device still shared with
+  other agents; visual check of the credit label pending a free device).
+- Correction: shipped wave counts are 20/40/70 = **130** enemies total
+  (`enemy_count=20` + `current_wave*10` per wave), earlier "100" note was wrong.
+
 ## Open items / next steps
 
 - Full scripted touch playtest (tap slot -> build popup -> place turret -> pan /
-  zoom) deferred: the shared A54 was under contention from another agent
-  (fruitmerge / marble-runner kept taking foreground), and adb `input tap`
-  coordinates are degenerate on the rotated Godot window (`input swipe` works).
-  Re-run when the device is free; the build-popup logic is already verified
+  zoom) deferred: device contention. A54 earlier taken by fruitmerge /
+  marble-runner; on 2026-11-15 ~20:53 user suggested A57, but A57 was also
+  contested: fruitmerge foreground with live injected touches 20:53:24-27,
+  then com.cykagent.shooter installed+launched 20:54:07; A54 meanwhile shows
+  com.cykagent.match3 foreground. APK IS installed on A57 (install -r Success,
+  <LAN_IP>:5555) and launches (pid 10492) but gets pushed to background.
+  adb `input tap` coordinates are degenerate on the rotated Godot window
+  (`input swipe` works) — use zero-distance swipe for taps.
+  Re-run when a device is free; the build-popup logic is already verified
   headless and touch events confirmed reaching the engine.
-- Difficulty tuning from human play (default balance: 3 waves, 100 enemies total;
+- Difficulty tuning from human play (default balance: 3 waves, 130 enemies total;
   shooting enemies can whittle the objective). Release keystore for signed
   release builds (currently debug-signed). Possible pinch-zoom + procedural SFX
   (upstream lacks sound) as polish.
