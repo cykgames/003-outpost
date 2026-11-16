@@ -21,8 +21,8 @@ var objective_damage := 10  # default damage dealt when entering the objective
 
 
 func _ready() -> void:
-	# initialize HUD
-	hud.state_label.text = state_machine.current_state.name
+	# initialize HUD (state label is debug-only; keep it hidden on enemies)
+	hud.state_label.hide()
 	hud.healthbar.max_value = health
 	hud.healthbar.value = health
 	# initialize navigation agent
@@ -83,4 +83,5 @@ func _on_navigation_agent_2d_velocity_computed(safe_velocity: Vector2) -> void:
 
 
 func _on_state_machine_state_changed(states_stack: Array) -> void:
-	hud.state_label.text = (states_stack[0] as State).name
+	# Debug FSM state label intentionally not shown on enemies.
+	pass

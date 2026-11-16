@@ -11,7 +11,7 @@ extends Node2D
 
 const STARTING_MONEY := 5000
 const TAP_THRESHOLD := 16.0  # screen px before a press counts as a drag
-const INITIAL_ZOOM := 0.5
+const INITIAL_ZOOM := 0.9
 
 @onready var objective := $Objective as Objective
 @onready var spawner := $Spawner as Spawner

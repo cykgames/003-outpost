@@ -103,7 +103,7 @@ func _stage_structure() -> void:
 	_check("turret slots found (got %d)" % slots.size(), slots.size() >= 7)
 	_check("objective health == 500", map.objective.health == 500)
 	_check("starting money == 5000", Global.money == 5000)
-	_check("camera zoom initialized to 0.5", is_equal_approx(cam.zoom.x, 0.5))
+	_check("camera zoom initialized to 0.9", is_equal_approx(cam.zoom.x, 0.9))
 
 
 func _stage_placement() -> void:
