@@ -1,7 +1,7 @@
 # 003 · Outpost Assault (mobile)
 
 - **Catalog**: [cykgames](https://github.com/cykgames) #003
-- **Status**: prototype `v0.1.1` (playable, debug-signed)
+- **Status**: prototype `v0.1.2` (playable, debug-signed)
 - **Author / maintainer agent**: **cykbot12** (bot12) — single-agent production
 - **Genre**: 2D tile-based tower defense
 - **Engine**: Godot 4.7.2, GL Compatibility renderer
