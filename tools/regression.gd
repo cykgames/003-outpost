@@ -80,14 +80,18 @@ func _process(_delta: float) -> void:
 				stage = 3
 		3:
 			if frame >= 26:
-				_stage_combat_setup()
+				_stage_pinch()
 				stage = 4
 		4:
+			if frame >= 32:
+				_stage_combat_setup()
+				stage = 5
+		5:
 			_stage_combat_poll()
 			if combat_done or frame >= 800:
 				_stage_combat_report()
-				stage = 5
-		5:
+				stage = 6
+		6:
 			if frame >= 810 or combat_done:
 				_stage_lose()
 				_finish()
@@ -103,7 +107,15 @@ func _stage_structure() -> void:
 	_check("turret slots found (got %d)" % slots.size(), slots.size() >= 7)
 	_check("objective health == 500", map.objective.health == 500)
 	_check("starting money == 5000", Global.money == 5000)
-	_check("camera zoom initialized to 0.9", is_equal_approx(cam.zoom.x, 0.9))
+	_check("camera zoom initialized to 1.0", is_equal_approx(cam.zoom.x, 1.0))
+	# Touch-target size guard: the slot hit box must stay >= 120 px on a
+	# 1080p phone. Design 1280x720 -> 1080p landscape scale = 1080/720 = 1.5.
+	var hit := 0.0
+	for child in slots[0].get_children():
+		if child is CollisionShape2D and child.shape is RectangleShape2D:
+			hit = child.shape.size.x * cam.zoom.x
+	_check("turret slot hit box %.0f design px (%.0f px on 1080p)" % [hit, hit * 1.5],
+			hit * 1.5 >= 120.0)
 
 
 func _stage_placement() -> void:
@@ -147,6 +159,40 @@ func _tap_check() -> void:
 		_tap_slot._handle_tap()
 		_check("tap handler opens build popup on empty slot", _tap_slot.turret_popup.visible)
 	_tap_slot.turret_popup.hide()
+
+
+func _push_touch(index: int, pressed: bool, pos: Vector2) -> void:
+	var e := InputEventScreenTouch.new()
+	e.index = index
+	e.pressed = pressed
+	e.position = pos
+	get_viewport().push_input(e)
+
+
+func _push_drag(index: int, pos: Vector2) -> void:
+	var e := InputEventScreenDrag.new()
+	e.index = index
+	e.position = pos
+	get_viewport().push_input(e)
+
+
+## Two-finger pinch: fingers spread 200 -> 400 px apart, so the zoom target
+## must roughly double (clamped by max_zoom).
+func _stage_pinch() -> void:
+	var before := cam.zoom.x
+	Engine.time_scale = 1.0
+	_push_touch(0, true, Vector2(400, 300))
+	_push_touch(1, true, Vector2(600, 300))
+	for i in range(1, 5):
+		_push_drag(0, Vector2(400 - 50 * i, 300))
+		_push_drag(1, Vector2(600 + 50 * i, 300))
+	_push_touch(0, false, Vector2(200, 300))
+	_push_touch(1, false, Vector2(800, 300))
+	_check("pinch doubles the zoom target (%.2f -> %.2f)" % [before, cam.target_zoom],
+			cam.target_zoom >= before * 1.5)
+	# pinch-zoom back out to the starting scale for the combat stages
+	cam.zoom = Vector2(before, before)
+	cam.target_zoom = before
 
 
 func _stage_combat_setup() -> void:

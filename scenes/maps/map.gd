@@ -11,7 +11,7 @@ extends Node2D
 
 const STARTING_MONEY := 5000
 const TAP_THRESHOLD := 16.0  # screen px before a press counts as a drag
-const INITIAL_ZOOM := 0.9
+const INITIAL_ZOOM := 1.0
 
 @onready var objective := $Objective as Objective
 @onready var spawner := $Spawner as Spawner
@@ -22,6 +22,12 @@ var _pressing := false
 var _dragging := false
 var _press_pos := Vector2.ZERO
 var _last_pos := Vector2.ZERO
+## Live touch points by finger index (screen space) and pinch bookkeeping.
+## Pinch needs the raw touch stream: the mouse-emulation path only ever sees
+## one pointer, so a two-finger spread has to be tracked here.
+var _touches := {}
+var _pinching := false
+var _pinch_dist := 0.0
 
 
 func _ready() -> void:
@@ -54,6 +60,13 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Raw touch tracking first: two fingers = pinch zoom. While pinching the
+	# emulated-mouse pan/tap path is suppressed so a pinch never pans.
+	if event is InputEventScreenTouch or event is InputEventScreenDrag:
+		_track_touch(event)
+		return
+	if _pinching:
+		return
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
@@ -80,6 +93,44 @@ func _unhandled_input(event: InputEvent) -> void:
 			if _dragging:
 				camera.pan(event.position - _last_pos)
 			_last_pos = event.position
+
+
+func _pinch_distance() -> float:
+	var pts: Array = _touches.values()
+	if pts.size() < 2:
+		return 0.0
+	return (pts[0] as Vector2).distance_to(pts[1] as Vector2)
+
+
+## Track the raw touch stream and drive pinch zoom.
+## Two fingers down -> pinch mode; the distance ratio between frames becomes
+## the zoom factor, so the world moves with the fingers. Releasing every
+## finger leaves pinch mode and hands control back to pan/tap.
+func _track_touch(event: InputEvent) -> void:
+	var touch := event as InputEventScreenTouch
+	if touch != null:
+		if touch.pressed:
+			_touches[touch.index] = touch.position
+			if _touches.size() >= 2:
+				_pinching = true
+				_pressing = false
+				_dragging = false
+				_pinch_dist = _pinch_distance()
+		else:
+			_touches.erase(touch.index)
+			if _touches.is_empty():
+				_pinching = false
+				_pinch_dist = 0.0
+		return
+	var drag := event as InputEventScreenDrag
+	if drag == null or not _touches.has(drag.index):
+		return
+	_touches[drag.index] = drag.position
+	if _pinching and _touches.size() >= 2:
+		var d := _pinch_distance()
+		if _pinch_dist > 1.0 and d > 1.0:
+			camera.zoom_by(d / _pinch_dist)
+		_pinch_dist = d
 
 
 func _notification(what: int) -> void:

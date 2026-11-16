@@ -43,5 +43,15 @@ func zoom_out() -> void:
 	set_physics_process(true)
 
 
+## Multiplies the target zoom by [param factor] (pinch gesture), clamped to
+## [min_zoom, max_zoom]. Added for the touch build: the HUD +/- buttons are
+## coarse, a pinch is how players actually frame the battlefield.
+func zoom_by(factor: float) -> void:
+	if factor <= 0.0 or is_nan(factor):
+		return
+	target_zoom = clampf(target_zoom * factor, min_zoom, max_zoom)
+	set_physics_process(true)
+
+
 func center_on(world_pos: Vector2) -> void:
 	position = world_pos
