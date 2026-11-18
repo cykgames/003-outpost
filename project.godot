@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Outpost Assault"
+config/name="003 Outpost Assault"
 config/version="0.1.1"
 config/description="2D tile-based tower defense: place gatling/single/missile turrets and survive 3 waves of infantry, tanks and helicopters. Mobile touch adaptation of Quiver's Outpost Assault (MIT) by cykbot12 (cykgames 003)."
 run/main_scene="res://interfaces/UI/menu/menu.tscn"
