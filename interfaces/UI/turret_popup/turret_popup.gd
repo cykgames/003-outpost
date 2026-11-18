@@ -18,11 +18,15 @@ func _on_close_pressed() -> void:
 
 
 # The Background node mimics the old "exclusive" Popup functionality:
-# when clicking outside the popup panel, the popup closes.
+# when clicking outside the popup panel, the popup closes. Handle both
+# mouse and raw screen touch so tap-outside-to-close works on phones even
+# if emulate_mouse_from_touch is disabled (fun-review H3).
 func _on_background_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			hide()
+	elif event is InputEventScreenTouch and event.pressed:
+		hide()
 
 
 # Note that you can pass custom arguments to a signal by enabling advanced 
